@@ -1,0 +1,27 @@
+
+# Python virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Generated ML artifacts
+*.joblib
+*.pkl
+
+# Logs
+*.log
+
+# OS and editor files
+.DS_Store
+.vscode/
+
+# Temporary files
+*.tmp

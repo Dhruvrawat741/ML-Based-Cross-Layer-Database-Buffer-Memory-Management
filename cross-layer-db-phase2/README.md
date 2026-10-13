@@ -81,3 +81,24 @@ python -m py_compile os_monitor/monitor.py
 - Combined OS + DBMS dataset
 - Feature engineering
 - ML model training in Phase 3
+
+
+## PostgreSQL and ML Prototype — Phase 2
+
+### Completed work
+- Installed and configured PostgreSQL 18.6 on Ubuntu ARM64.
+- Created the `cross_layer_db` benchmark database.
+- Initialized pgbench tables with 200,000 account records.
+- Executed a pgbench workload of 400 transactions with zero failures.
+- Generated a synthetic page-access dataset containing 10,000 records.
+- Trained an initial Random Forest classifier.
+
+### ML artifacts
+- `ml/generate_dataset.py` — generates the synthetic access trace.
+- `ml/train.py` — trains and evaluates the Random Forest.
+- `data/processed/page_access_dataset.csv` — generated training dataset.
+
+### Current limitations
+The page-access trace is synthetic, not a real PostgreSQL page-level trace.
+The initial model is a prototype; improvements and comparisons against
+traditional replacement policies remain future work.

@@ -1,27 +1,16 @@
+# Kaggle raw data
+data/raw/*.csv
 
-# Python virtual environment
+# Generated datasets and model artifacts
+data/processed/*.csv
+ml/*.joblib
+
+# Python environments
 venv/
 .venv/
-
-# Python cache
 __pycache__/
 *.py[cod]
 
-# Environment variables and secrets
-.env
-.env.*
-!.env.example
-
-# Generated ML artifacts
-*.joblib
-*.pkl
-
-# Logs
+# Experiment outputs
+results/
 *.log
-
-# OS and editor files
-.DS_Store
-.vscode/
-
-# Temporary files
-*.tmp

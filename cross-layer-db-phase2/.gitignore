@@ -1,5 +1,4 @@
-# Kaggle raw data
-data/raw/*.csv
+
 
 # Generated datasets and model artifacts
 data/processed/*.csv

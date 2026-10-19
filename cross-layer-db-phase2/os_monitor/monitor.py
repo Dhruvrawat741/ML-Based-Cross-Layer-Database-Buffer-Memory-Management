@@ -1,65 +1,98 @@
-import psutil
+
 import csv
-from datetime import datetime
 import os
+import time
+from datetime import datetime, timezone
 
-OUTPUT_FILE = "data/raw/os_metrics.csv"
+import psutil
 
-os.makedirs("data/raw", exist_ok=True)
+OUTPUT_DIR = "data/OS_result"
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "query_workload_data.csv")
+INTERVAL_SECONDS = 2
 
-with open(OUTPUT_FILE, "w", newline="") as file:
-    writer = csv.writer(file)
+FIELDS = [
+    "timestamp_utc",
+    "cpu_percent",
+    "ram_percent",
+    "ram_used_mb",
+    "ram_available_mb",
+    "swap_percent",
+    "disk_read_bytes_total",
+    "disk_write_bytes_total",
+    "disk_read_bytes_per_sec",
+    "disk_write_bytes_per_sec",
+]
 
-    writer.writerow([
-        "timestamp",
-        "cpu_percent",
-        "ram_percent",
-        "available_ram_mb",
-        "disk_read_mb",
-        "disk_write_mb"
-    ])
+def main():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    disk_previous = psutil.disk_io_counters()
 
-    print("OS monitoring started...")
-    print("Press Ctrl+C to stop.")
+    # Prime CPU measurement so the next reading is meaningful.
+    psutil.cpu_percent(interval=None)
+    time.sleep(INTERVAL_SECONDS)
+    file_exists = os.path.exists(OUTPUT_FILE)
+    with open(OUTPUT_FILE, "a", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=FIELDS)
 
-    previous_disk = psutil.disk_io_counters()
+        if not file_exists or os.path.getsize(OUTPUT_FILE) == 0:
+            writer.writeheader()
 
-    try:
-        while True:
-            cpu = psutil.cpu_percent(interval=1)
-            memory = psutil.virtual_memory()
-            current_disk = psutil.disk_io_counters()
+        print(f"Collecting OS metrics every {INTERVAL_SECONDS}s.")
+        print(f"Saving to: {OUTPUT_FILE}")
+        print("Press Ctrl+C to stop.")
 
-            read_mb = (
-                current_disk.read_bytes - previous_disk.read_bytes
-            ) / (1024 * 1024)
+        try:
+            while True:
+                timestamp = datetime.now(timezone.utc).isoformat()
+                cpu = psutil.cpu_percent(interval=None)
+                memory = psutil.virtual_memory()
+                swap = psutil.swap_memory()
+                disk_current = psutil.disk_io_counters()
 
-            write_mb = (
-                current_disk.write_bytes - previous_disk.write_bytes
-            ) / (1024 * 1024)
+                elapsed = INTERVAL_SECONDS
+                read_rate = 0
+                write_rate = 0
 
-            previous_disk = current_disk
+                if disk_previous and disk_current:
+                    read_rate = (
+                        disk_current.read_bytes - disk_previous.read_bytes
+                    ) / elapsed
+                    write_rate = (
+                        disk_current.write_bytes - disk_previous.write_bytes
+                    ) / elapsed
 
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                writer.writerow({
+                    "timestamp_utc": timestamp,
+                    "cpu_percent": cpu,
+                    "ram_percent": memory.percent,
+                    "ram_used_mb": round(memory.used / (1024 ** 2), 2),
+                    "ram_available_mb": round(
+                        memory.available / (1024 ** 2), 2
+                    ),
+                    "swap_percent": swap.percent,
+                    "disk_read_bytes_total": (
+                        disk_current.read_bytes if disk_current else ""
+                    ),
+                    "disk_write_bytes_total": (
+                        disk_current.write_bytes if disk_current else ""
+                    ),
+                    "disk_read_bytes_per_sec": round(max(read_rate, 0), 2),
+                    "disk_write_bytes_per_sec": round(max(write_rate, 0), 2),
+                })
 
-            writer.writerow([
-                timestamp,
-                cpu,
-                memory.percent,
-                round(memory.available / (1024 * 1024), 2),
-                round(read_mb, 2),
-                round(write_mb, 2)
-            ])
+                csvfile.flush()
+                disk_previous = disk_current
 
-            file.flush()
+                print(
+                    f"CPU: {cpu:5.1f}% | "
+                    f"RAM: {memory.percent:5.1f}% | "
+                    f"Available RAM: {memory.available / (1024 ** 2):.0f} MB"
+                )
 
-            print(
-                f"{timestamp} | "
-                f"CPU: {cpu}% | "
-                f"RAM: {memory.percent}% | "
-                f"Disk Read: {read_mb:.2f} MB | "
-                f"Disk Write: {write_mb:.2f} MB"
-            )
+                time.sleep(INTERVAL_SECONDS)
 
-    except KeyboardInterrupt:
-        print("\nOS monitoring stopped.")
+        except KeyboardInterrupt:
+            print("\nCollection stopped.")
+
+if __name__ == "__main__":
+    main()

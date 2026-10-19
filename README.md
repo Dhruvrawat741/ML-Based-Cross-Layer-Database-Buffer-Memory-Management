@@ -711,3 +711,21 @@ Timing and traced memory can vary due to system load, Python overhead, and the e
 ---
 
 **Project principle:** Keep experiments reproducible, distinguish simulated results from real database measurements, and do not claim ML-based replacement improvements until the ML policy has been integrated and evaluated against appropriate baselines.
+
+## 17. Reproducibility and Validation
+
+### Experiment Validation
+
+- Run experiments using the documented commands.
+- Verify that the expected output files are generated.
+- Compare results across repeated runs using the same workload.
+- Record CPU utilization, memory usage, query execution time, and buffer metrics where applicable.
+- Distinguish simulated page-replacement results from actual PostgreSQL measurements.
+
+### Validation Checklist
+
+- [x] Verify the required Python dependencies.
+- [x] Confirm database connectivity before running SQL experiments.
+- [x] Check that input datasets exist.
+- [x] Confirm that experiment output files are generated.
+- [x] Review results before drawing performance conclusions.

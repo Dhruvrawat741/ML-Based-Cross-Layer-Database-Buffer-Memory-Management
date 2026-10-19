@@ -1,2 +1,7 @@
 psutil
 pandas
+psycopg2
+matplotlib
+scikit-learn
+csv
+tracemalloc

@@ -16,7 +16,13 @@ DB_CONFIG = {
 }
 
 OUTPUT_DIR = Path("data/OS_result")
-OUTPUT_FILE = OUTPUT_DIR / "query_metrics.csv"
+OUTPUT_FILE = Path(
+    os.environ.get(
+        "ML_QUERY_OUTPUT",
+        str(OUTPUT_DIR / "query_metrics.csv")
+    )
+)
+
 
 QUERIES = [
     (
@@ -133,6 +139,7 @@ QUERIES = [
 
 FIELDS = [
     "run_id",
+    "phase",
     "query_id",
     "query_name",
     "timestamp_utc",
@@ -210,6 +217,7 @@ def main():
                 metrics = parse_explain(explain_result)
                 row = {
                     "run_id": run_id,
+                    "phase": os.environ.get("ML_PHASE", "manual"),
                     "query_id": query_id,
                     "query_name": query_name,
                     "timestamp_utc": datetime.now(

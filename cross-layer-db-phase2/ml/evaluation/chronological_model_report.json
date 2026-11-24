@@ -1,0 +1,172 @@
+{
+  "validation": "chronological_within_each_phase",
+  "gap_seconds": 30,
+  "training_rows": 3158,
+  "testing_rows": 800,
+  "features": [
+    "cpu_percent",
+    "ram_percent",
+    "ram_used_mb",
+    "ram_available_mb",
+    "swap_percent",
+    "disk_read_bytes_per_sec",
+    "disk_write_bytes_per_sec",
+    "query_count",
+    "query_execution_mean_ms",
+    "query_execution_max_ms",
+    "query_rows_returned",
+    "shared_hits",
+    "shared_reads",
+    "temp_reads",
+    "temp_writes"
+  ],
+  "excluded_cumulative_counters": [
+    "disk_read_bytes_total",
+    "disk_write_bytes_total"
+  ],
+  "training_distribution": {
+    "light": 1266,
+    "heavy": 1266,
+    "idle": 626
+  },
+  "testing_distribution": {
+    "light": 320,
+    "heavy": 320,
+    "idle": 160
+  },
+  "gap_rows_removed": [
+    {
+      "phase": "heavy",
+      "gap_rows_removed": 14
+    },
+    {
+      "phase": "idle",
+      "gap_rows_removed": 14
+    },
+    {
+      "phase": "light",
+      "gap_rows_removed": 14
+    }
+  ],
+  "baseline_accuracy": 0.4,
+  "random_forest_accuracy": 0.94375,
+  "random_forest_macro_f1": 0.9238864428011903,
+  "class_order": [
+    "heavy",
+    "idle",
+    "light"
+  ],
+  "confusion_matrix": [
+    [
+      320,
+      0,
+      0
+    ],
+    [
+      0,
+      116,
+      44
+    ],
+    [
+      0,
+      1,
+      319
+    ]
+  ],
+  "classification_report": {
+    "heavy": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 320.0
+    },
+    "idle": {
+      "precision": 0.9914529914529915,
+      "recall": 0.725,
+      "f1-score": 0.8375451263537906,
+      "support": 160.0
+    },
+    "light": {
+      "precision": 0.8787878787878788,
+      "recall": 0.996875,
+      "f1-score": 0.9341142020497804,
+      "support": 320.0
+    },
+    "accuracy": 0.94375,
+    "macro avg": {
+      "precision": 0.9567469567469568,
+      "recall": 0.9072916666666666,
+      "f1-score": 0.9238864428011903,
+      "support": 800.0
+    },
+    "weighted avg": {
+      "precision": 0.9498057498057497,
+      "recall": 0.94375,
+      "f1-score": 0.9411547060906702,
+      "support": 800.0
+    }
+  },
+  "feature_importance": [
+    {
+      "feature": "cpu_percent",
+      "importance": 0.2623383755687705
+    },
+    {
+      "feature": "ram_available_mb",
+      "importance": 0.24975538124109198
+    },
+    {
+      "feature": "ram_used_mb",
+      "importance": 0.24105829497512057
+    },
+    {
+      "feature": "ram_percent",
+      "importance": 0.1635266824683073
+    },
+    {
+      "feature": "swap_percent",
+      "importance": 0.05273094148605252
+    },
+    {
+      "feature": "disk_write_bytes_per_sec",
+      "importance": 0.029435960971554664
+    },
+    {
+      "feature": "disk_read_bytes_per_sec",
+      "importance": 0.0011543632891025091
+    },
+    {
+      "feature": "query_count",
+      "importance": 0.0
+    },
+    {
+      "feature": "query_execution_mean_ms",
+      "importance": 0.0
+    },
+    {
+      "feature": "query_execution_max_ms",
+      "importance": 0.0
+    },
+    {
+      "feature": "query_rows_returned",
+      "importance": 0.0
+    },
+    {
+      "feature": "shared_hits",
+      "importance": 0.0
+    },
+    {
+      "feature": "shared_reads",
+      "importance": 0.0
+    },
+    {
+      "feature": "temp_reads",
+      "importance": 0.0
+    },
+    {
+      "feature": "temp_writes",
+      "importance": 0.0
+    }
+  ],
+  "interpretation": "Classifies the recorded workload phase from contemporaneous OS and query-level metrics. It does not predict page reuse or future page accesses."
+}

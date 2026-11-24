@@ -1,0 +1,37 @@
+{
+    "FIFO": {
+        "evaluated_snapshots": 1977,
+        "mean_precision_at_k": 0.010214271720620503,
+        "mean_recall_at_k": 0.010214271720620503,
+        "mean_f1_at_k": 0.010214271720620503,
+        "mean_decision_latency_us": 271.794597875569
+    },
+    "LRU": {
+        "evaluated_snapshots": 1977,
+        "mean_precision_at_k": 0.040523716658952845,
+        "mean_recall_at_k": 0.040523716658952845,
+        "mean_f1_at_k": 0.04052371665895284,
+        "mean_decision_latency_us": 328.3180617096611
+    },
+    "LFU": {
+        "evaluated_snapshots": 1977,
+        "mean_precision_at_k": 0.17075866287582608,
+        "mean_recall_at_k": 0.17075866287582608,
+        "mean_f1_at_k": 0.17075866287582608,
+        "mean_decision_latency_us": 299.2690455235205
+    },
+    "ML": {
+        "evaluated_snapshots": 1977,
+        "mean_precision_at_k": 0.6594228637321746,
+        "mean_recall_at_k": 0.6594228637321746,
+        "mean_f1_at_k": 0.6594228637321746,
+        "mean_decision_latency_us": 5237.40777693475
+    },
+    "_methodology": {
+        "evaluation": "Snapshot-based eviction ranking",
+        "actual_victim_definition": "Eligible pages present in snapshot t but absent in snapshot t+1",
+        "k": "Number of observed departures in the next snapshot; each policy predicts the same number of victims",
+        "frequency_definition": "Number of previous snapshots in which a page appeared; not exact logical access frequency",
+        "limitation": "This is not a logical page-reference trace or a cache hit-rate simulation. Snapshot departures may reflect buffer changes between observations."
+    }
+}

@@ -299,7 +299,7 @@ def query_lab():
         first_keyword = next((t.normalized.upper() for t in statement.tokens
                               if not t.is_whitespace and not t.is_comment), "")
         allowed = {"SELECT", "INSERT", "UPDATE", "DELETE", "CALL"}
-        if first_keyword not in allowed or sql_type not in allowed:
+        if first_keyword not in allowed:
             st.error("Only one SELECT, INSERT, UPDATE, DELETE or CALL statement is permitted.")
             return
         if sql_type in {"INSERT", "UPDATE", "DELETE", "CALL"} and not confirm:

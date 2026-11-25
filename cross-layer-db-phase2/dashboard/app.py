@@ -113,7 +113,7 @@ def save_to_postgres(workload_label, capacity, result, seed):
     import psycopg
 
     conn = psycopg.connect(
-        host=os.getenv("DB_HOST") or None,
+        host=os.getenv("DB_HOST", "127.0.0.1"),
         port=os.getenv("DB_PORT", "5432"),
         dbname=os.getenv("DB_NAME", "olist_db"),
         user=os.getenv("DB_USER", "cachelab_app"),
@@ -241,7 +241,7 @@ def benchmark_page():
         st.dataframe(result.round(4), use_container_width=True, hide_index=True)
         c1,c2 = st.columns(2)
         with c1:
-            st.plotly_chart(px.bar(result,x="policy",y="hit_ratio_pct",color="policy",title="Cache hit ratio (%)",text_auto=".2f"),use_container_width=True)
+            st.plotly_chart(px.bar(result,x="policy",y="hit_ratio_pct",color="policy",color_discrete_sequence=["#0f8b8d", "#2563a6", "#62a89f", "#e0a458"],title="Cache hit ratio (%)",text_auto=".2f"),use_container_width=True)
             st.plotly_chart(px.bar(result,x="policy",y="page_faults",color="policy",title="Page faults",text_auto=True),use_container_width=True)
             st.plotly_chart(px.bar(result,x="policy",y="decision_time_ms",color="policy",title="Victim-selection time (ms)",text_auto=".3f"),use_container_width=True)
         with c2:
@@ -359,16 +359,16 @@ def main():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
     html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-    .stApp { background: #f7f7fb; }
-    [data-testid="stSidebar"] { background: #17152b; }
-    [data-testid="stSidebar"] * { color: #f4f1ff !important; }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: #c8c2e3 !important; }
-    h1, h2, h3 { color: #211d3b; letter-spacing: -0.035em; }
-    [data-testid="stMetric"] { background: white; border: 1px solid #ebe9f3; padding: 16px; border-radius: 14px; }
-    [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] { }
-    .stButton > button[kind="primary"] { background: #6554d9; border: 0; border-radius: 10px; }
-    .stButton > button { border-radius: 10px; }
+    .stApp { background: #f2f7f7; }
+    [data-testid="stSidebar"] { background: #102a2e; }
+    [data-testid="stSidebar"] * { color: #effafa !important; }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: #a9c9c9 !important; }
+    h1, h2, h3 { color: #17383b; letter-spacing: -0.035em; }
+    [data-testid="stMetric"] { background: #ffffff; border: 1px solid #dce9e8; padding: 16px; border-radius: 14px; }
+    .stButton > button[kind="primary"] { background: #0f8b8d; color: white; border: 0; border-radius: 10px; }
+    .stButton > button { border-radius: 10px; border-color: #c8ddda; }
     [data-testid="stDataFrame"], [data-testid="stPlotlyChart"] { background: white; border-radius: 14px; }
+    [data-testid="stAlert"] { border-radius: 12px; }
     </style>
     """, unsafe_allow_html=True)
     with st.sidebar:

@@ -1,0 +1,32 @@
+
+
+# Generated datasets and model artifacts
+data/processed/*.csv
+ml/*.joblib
+
+# Python environments
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Experiment outputs
+results/
+*.log
+
+# Track page replacement benchmark results
+!page_replacement_benchmark/results/
+!page_replacement_benchmark/results/**
+
+
+# Large generated page-snapshot datasets
+ml_cache_policy/data/olist_page_snapshots*.csv
+ml_cache_policy/data/cache_policy_training_data.csv
+
+# Raw monitoring and experiment collections
+data/OS_result/
+data/combined_monitoring/
+
+# Python-generated files
+**/__pycache__/
+*.pyc

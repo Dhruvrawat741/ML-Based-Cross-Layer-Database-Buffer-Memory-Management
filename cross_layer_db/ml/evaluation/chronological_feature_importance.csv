@@ -1,0 +1,16 @@
+feature,importance
+cpu_percent,0.2623383755687705
+ram_available_mb,0.24975538124109198
+ram_used_mb,0.24105829497512057
+ram_percent,0.1635266824683073
+swap_percent,0.05273094148605252
+disk_write_bytes_per_sec,0.029435960971554664
+disk_read_bytes_per_sec,0.0011543632891025091
+query_count,0.0
+query_execution_mean_ms,0.0
+query_execution_max_ms,0.0
+query_rows_returned,0.0
+shared_hits,0.0
+shared_reads,0.0
+temp_reads,0.0
+temp_writes,0.0

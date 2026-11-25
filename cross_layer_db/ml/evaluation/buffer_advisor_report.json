@@ -1,0 +1,14 @@
+{
+  "timestamp_utc": "2026-11-24 17:38:10.679577+00:00",
+  "predicted_workload": "heavy",
+  "confidence": 0.9962,
+  "class_probabilities": {
+    "heavy": 0.9962,
+    "idle": 0.0014,
+    "light": 0.0023
+  },
+  "priority": "High",
+  "recommended_action": "Investigate memory pressure and possible buffer churn. Review shared reads, temporary I/O, and query plans before considering any configuration adjustment.",
+  "metrics_to_monitor": "Monitor RAM availability, swap, shared reads, temporary writes, and query execution times.",
+  "model_scope": "Workload-state classification from OS and query-level metrics. Not a page-reuse predictor or an automatic PostgreSQL buffer controller."
+}

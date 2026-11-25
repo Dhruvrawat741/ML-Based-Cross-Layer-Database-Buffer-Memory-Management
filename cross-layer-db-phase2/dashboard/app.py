@@ -48,6 +48,7 @@ def train_ml(seed, locality, n_pages):
         q = positions[page]
         gap = q[1]-i if len(q)>1 else len(train)
         X.append(features_for(page, i, seen, counts, last_gap))
+        y.append(float(np.log1p(gap)))
         old = seen.get(page)
         last_gap[page] = i-old[1] if old else 0
         seen[page] = (old[0], i) if old else (i, i)

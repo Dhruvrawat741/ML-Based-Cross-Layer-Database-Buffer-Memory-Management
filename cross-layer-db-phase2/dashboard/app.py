@@ -216,7 +216,7 @@ def benchmark_page():
         db_experiment_id = None
         db_error = None
         try:
-            db_experiment_id = save_to_postgres(label, int(capacity), result, int(seed))
+            db_experiment_id = save_to_postgres("Workload", int(capacity), result, int(seed))
         except Exception as exc:
             db_error = str(exc)
         st.session_state["result"] = result

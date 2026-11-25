@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, time, tracemalloc
+import json, time, tracemalloc, re
 from collections import Counter, deque
 from datetime import datetime
 from pathlib import Path
@@ -164,10 +164,9 @@ def save_to_postgres(workload_label, capacity, result, seed):
         conn.close()
 
 
-def main():
-    st.set_page_config(page_title="Cross-Layer Cache Lab", page_icon="🧠", layout="wide")
-    st.title("ML-Based Cross-Layer Database Buffer & Memory Management")
-    st.caption("Interactive, reproducible comparison of FIFO, LRU, LFU and ML cache replacement.")
+def benchmark_page():
+    st.title("Policy Benchmark")
+    st.caption("Compare FIFO, LRU, LFU and ML on the same page-reference trace.")
     with st.expander("Measurement methodology and limitations"):
         st.markdown("""
         - All four policies receive the same ordered page-reference trace and cache capacity.
@@ -253,6 +252,139 @@ def main():
         st.download_button("Download comparison JSON",json.dumps(result.to_dict("records"),indent=2).encode("utf-8"),"policy_comparison.json","application/json")
     else:
         st.info("Configure the workload and click Run all four policies to collect metrics and render graphs.")
+
+
+def db_connection():
+    import os
+    import psycopg
+    return psycopg.connect(
+        host=os.getenv("DB_HOST") or None,
+        port=os.getenv("DB_PORT", "5432"),
+        dbname=os.getenv("DB_NAME", "olist_db"),
+        user=os.getenv("DB_USER", "cachelab_app"),
+        password=os.getenv("DB_PASSWORD", ""),
+        connect_timeout=5,
+    )
+
+
+def query_lab():
+    st.title("SQL Query Lab")
+    st.caption("Run SQL against your olist_db database and inspect the returned rows.")
+    st.info("Allowed: SELECT, INSERT, UPDATE, DELETE and CALL. Data-changing statements require confirmation. DDL, transaction-control commands and multiple statements are blocked.")
+    examples = {
+        "Choose an example": "",
+        "View workloads": "SELECT * FROM cachelab.workload_catalog_view ORDER BY workload_id;",
+        "Compare policies": "SELECT * FROM cachelab.policy_comparison_view ORDER BY experiment_id DESC, policy_name;",
+        "Count workloads (function)": "SELECT cachelab.get_workload_count();",
+        "Update description (procedure)": "CALL cachelab.update_workload_description(1, 'Updated from SQL Query Lab');",
+        "Recent audit entries": "SELECT * FROM cachelab.audit_logs ORDER BY 1 DESC LIMIT 20;",
+    }
+    example = st.selectbox("SQL examples", list(examples.keys()))
+    if "sql_editor" not in st.session_state:
+        st.session_state.sql_editor = examples["Compare policies"]
+    if example != "Choose an example" and st.button("Load example"):
+        st.session_state.sql_editor = examples[example]
+    sql_text = st.text_area("SQL statement", key="sql_editor", height=190,
+                            placeholder="SELECT * FROM cachelab.workloads;")
+    confirm = st.checkbox("I confirm that I want to execute this data-changing statement.")
+    if st.button("▶ Execute SQL", type="primary"):
+        import sqlparse
+        statements = [s for s in sqlparse.parse(sql_text) if str(s).strip()]
+        if len(statements) != 1:
+            st.error("Enter exactly one SQL statement.")
+            return
+        statement = statements[0]
+        sql_type = statement.get_type().upper()
+        # Reject WITH/CTE, DDL, transaction control, and every command outside this allowlist.
+        first_keyword = next((t.normalized.upper() for t in statement.tokens
+                              if not t.is_whitespace and not t.is_comment), "")
+        allowed = {"SELECT", "INSERT", "UPDATE", "DELETE", "CALL"}
+        if first_keyword not in allowed or sql_type not in allowed:
+            st.error("Only one SELECT, INSERT, UPDATE, DELETE or CALL statement is permitted.")
+            return
+        if sql_type in {"INSERT", "UPDATE", "DELETE", "CALL"} and not confirm:
+            st.warning("Tick the confirmation checkbox before executing a data-changing statement.")
+            return
+        try:
+            with db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql_text)
+                    if cur.description:
+                        rows = cur.fetchall()
+                        columns = [d.name for d in cur.description]
+                        out = pd.DataFrame(rows, columns=columns)
+                        st.session_state.sql_result = out
+                        st.session_state.sql_message = f"Query successful · {len(out):,} row(s) returned"
+                    else:
+                        st.session_state.sql_result = None
+                        st.session_state.sql_message = f"Statement successful · {cur.rowcount} row(s) affected"
+            st.success(st.session_state.sql_message)
+        except Exception as exc:
+            st.error(f"SQL execution failed: {exc}")
+    if st.session_state.get("sql_message") and st.session_state.get("sql_result") is not None:
+        st.caption(st.session_state.sql_message)
+        st.dataframe(st.session_state.sql_result, use_container_width=True, hide_index=True)
+        st.download_button("Download query result CSV",
+            st.session_state.sql_result.to_csv(index=False).encode("utf-8"),
+            "query_result.csv", "text/csv")
+    elif st.session_state.get("sql_message"):
+        st.success(st.session_state.sql_message)
+
+
+def experiment_history_page():
+    st.title("Experiment History")
+    st.caption("Previously persisted benchmark runs from PostgreSQL.")
+    try:
+        with db_connection() as conn:
+            history = pd.read_sql_query("""
+                SELECT e.experiment_id, e.experiment_name, w.workload_name,
+                       e.cache_capacity, p.policy_name, m.total_references,
+                       m.cache_hits, m.page_faults,
+                       ROUND((m.hit_ratio * 100)::numeric, 2) AS hit_ratio_percent,
+                       m.execution_time_ms, m.memory_usage_mb
+                FROM cachelab.experiments e
+                JOIN cachelab.workloads w ON w.workload_id=e.workload_id
+                JOIN cachelab.experiment_metrics m ON m.experiment_id=e.experiment_id
+                JOIN cachelab.policies p ON p.policy_id=m.policy_id
+                ORDER BY e.experiment_id DESC, p.policy_name
+            """, conn)
+        st.dataframe(history, use_container_width=True, hide_index=True)
+    except Exception as exc:
+        st.error(f"Could not load experiment history: {exc}")
+
+
+def main():
+    st.set_page_config(page_title="Cross-Layer DB Lab", page_icon="🧠", layout="wide")
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
+    .stApp { background: #f7f7fb; }
+    [data-testid="stSidebar"] { background: #17152b; }
+    [data-testid="stSidebar"] * { color: #f4f1ff !important; }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: #c8c2e3 !important; }
+    h1, h2, h3 { color: #211d3b; letter-spacing: -0.035em; }
+    [data-testid="stMetric"] { background: white; border: 1px solid #ebe9f3; padding: 16px; border-radius: 14px; }
+    [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] { }
+    .stButton > button[kind="primary"] { background: #6554d9; border: 0; border-radius: 10px; }
+    .stButton > button { border-radius: 10px; }
+    [data-testid="stDataFrame"], [data-testid="stPlotlyChart"] { background: white; border-radius: 14px; }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.sidebar:
+        st.markdown("## ◈ CROSS-LAYER")
+        st.caption("DATABASE BUFFER & MEMORY LAB")
+        page = st.radio("WORKSPACE", ["Overview & Benchmark", "SQL Query Lab", "Experiment History"],
+                        label_visibility="collapsed")
+        st.divider()
+        st.caption("POSTGRESQL · OLIST_DB")
+    if page == "Overview & Benchmark":
+        benchmark_page()
+    elif page == "SQL Query Lab":
+        query_lab()
+    else:
+        experiment_history_page()
+
 
 if __name__ == "__main__":
     main()

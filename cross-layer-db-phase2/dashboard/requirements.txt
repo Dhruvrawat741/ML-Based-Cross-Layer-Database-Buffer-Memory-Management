@@ -4,3 +4,4 @@ numpy>=1.26
 scikit-learn>=1.4
 plotly>=5.20
 psycopg[binary]>=3.2
+sqlparse>=0.5.3

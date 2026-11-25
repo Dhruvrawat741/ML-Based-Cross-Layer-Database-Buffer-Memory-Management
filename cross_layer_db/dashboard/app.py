@@ -296,8 +296,15 @@ def query_lab():
         statement = statements[0]
         sql_type = statement.get_type().upper()
         # Reject WITH/CTE, DDL, transaction control, and every command outside this allowlist.
-        first_keyword = next((t.normalized.upper() for t in statement.tokens
-                              if not t.is_whitespace and not t.is_comment), "")
+        from sqlparse import tokens as T
+        first_keyword = next(
+            (
+                t.normalized.upper()
+                for t in statement.tokens
+                if not t.is_whitespace and t.ttype not in T.Comment
+            ),
+            "",
+        )
         allowed = {"SELECT", "INSERT", "UPDATE", "DELETE", "CALL"}
         if first_keyword not in allowed:
             st.error("Only one SELECT, INSERT, UPDATE, DELETE or CALL statement is permitted.")

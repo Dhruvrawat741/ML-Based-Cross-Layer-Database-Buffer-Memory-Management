@@ -113,10 +113,10 @@ def save_to_postgres(workload_label, capacity, result, seed):
     import psycopg
 
     conn = psycopg.connect(
-        host=os.getenv("DB_HOST", "localhost"),
+        host=os.getenv("DB_HOST") or None,
         port=os.getenv("DB_PORT", "5432"),
         dbname=os.getenv("DB_NAME", "olist_db"),
-        user=os.getenv("DB_USER", "dhruv"),
+        user=os.getenv("DB_USER", "cachelab_app"),
         password=os.getenv("DB_PASSWORD", ""),
         connect_timeout=5,
     )

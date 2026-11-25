@@ -1,7 +1,13 @@
-psutil
-pandas
-psycopg2
-matplotlib
-scikit-learn
-csv
-tracemalloc
+# Core application and dashboard
+streamlit>=1.36
+pandas>=2.0
+numpy>=1.26
+plotly>=5.20
+scikit-learn>=1.4
+psycopg[binary]>=3.2
+sqlparse>=0.5.3
+
+# Monitoring, model persistence, and experiment reports
+psutil>=5.9
+matplotlib>=3.8
+joblib>=1.3

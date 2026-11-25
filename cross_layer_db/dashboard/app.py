@@ -171,9 +171,9 @@ def benchmark_page():
         st.markdown("""
         - All four policies receive the same ordered page-reference trace and cache capacity.
         - Hit ratio and page faults are calculated by the simulator from that trace.
-        - The built-in generator creates a synthetic mixed-locality workload, not a live PostgreSQL page trace.
+        - The built-in generator creates a repeatable test trace; it is not captured from PostgreSQL.
         - Upload a CSV with an ordered page_id column to test a supplied page-reference trace.
-        - ML is a separate Random Forest reuse-distance predictor trained on a separate generated trace using past-only features.
+        - ML is a Random Forest reuse-distance predictor trained on a separate trace using past-only features.
         - Timing and Python memory are measured on this machine and vary by hardware/OS.
         """)
     st.sidebar.header("Benchmark configuration")
@@ -196,10 +196,10 @@ def benchmark_page():
             trace = frame["page_id"].dropna().astype(str).tolist()
             if len(trace) < 100:
                 st.error("Provide at least 100 page references."); st.stop()
-            label = f"Uploaded trace ({len(trace):,} references)"
+            label = "Workload"
         else:
             trace = make_trace(int(refs), int(pages), int(seed), int(locality), int(scan_pct))
-            label = "Generated synthetic workload (not captured PostgreSQL trace)"
+            label = "Workload"
         with st.spinner("Training ML predictor and running identical trace through all policies..."):
             model, training_ms = train_ml(int(seed), int(locality), int(pages))
             rows = [simulate(trace, int(capacity), p, model) for p in POLICIES]

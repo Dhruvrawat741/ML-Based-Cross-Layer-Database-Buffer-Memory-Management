@@ -106,6 +106,64 @@ def simulate(trace, capacity, policy, model=None):
             "ml_inference_time_ms":inference_ns/1e6, "total_simulation_time_ms":elapsed_ms,
             "peak_python_memory_mb":peak_bytes/(1024*1024), "cache_capacity_pages":capacity}
 
+
+def save_to_postgres(workload_label, capacity, result, seed):
+    """Persist the dashboard's measured policy results to PostgreSQL."""
+    import os
+    import psycopg
+
+    conn = psycopg.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=os.getenv("DB_PORT", "5432"),
+        dbname=os.getenv("DB_NAME", "olist_db"),
+        user=os.getenv("DB_USER", "dhruv"),
+        password=os.getenv("DB_PASSWORD", ""),
+        connect_timeout=5,
+    )
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO cachelab.workloads (workload_name, description)
+                    VALUES (%s, %s) RETURNING workload_id
+                    """,
+                    (workload_label, "Dashboard workload; seed=" + str(seed)),
+                )
+                workload_id = cur.fetchone()[0]
+                cur.execute(
+                    """
+                    INSERT INTO cachelab.experiments
+                        (workload_id, experiment_name, cache_capacity, status)
+                    VALUES (%s, %s, %s, 'COMPLETED')
+                    RETURNING experiment_id
+                    """,
+                    (workload_id, "Dashboard comparison seed " + str(seed), int(capacity)),
+                )
+                experiment_id = cur.fetchone()[0]
+                for row in result.to_dict("records"):
+                    cur.execute(
+                        """
+                        INSERT INTO cachelab.experiment_metrics
+                            (experiment_id, policy_id, total_references, cache_hits,
+                             page_faults, evictions, hit_ratio, execution_time_ms,
+                             memory_usage_mb)
+                        SELECT %s, policy_id, %s, %s, %s, %s, %s, %s, %s
+                        FROM cachelab.policies WHERE policy_name = %s
+                        """,
+                        (
+                            experiment_id, int(row["references"]), int(row["hits"]),
+                            int(row["page_faults"]), int(row["evictions"]),
+                            float(row["hit_ratio_pct"]) / 100.0,
+                            float(row["total_simulation_time_ms"]),
+                            float(row["peak_python_memory_mb"]), str(row["policy"]),
+                        ),
+                    )
+        return experiment_id
+    finally:
+        conn.close()
+
+
 def main():
     st.set_page_config(page_title="Cross-Layer Cache Lab", page_icon="🧠", layout="wide")
     st.title("ML-Based Cross-Layer Database Buffer & Memory Management")
@@ -156,9 +214,19 @@ def main():
         json_path.write_text(json.dumps({"workload":label,"seed":int(seed),"trace_references":len(trace),
             "unique_pages":len(set(trace)),"capacity":int(capacity),"ml_training_time_ms":training_ms,
             "results":rows}, indent=2), encoding="utf-8")
+        db_experiment_id = None
+        db_error = None
+        try:
+            db_experiment_id = save_to_postgres(label, int(capacity), result, int(seed))
+        except Exception as exc:
+            db_error = str(exc)
         st.session_state["result"] = result
-        st.session_state["meta"] = {"label":label,"csv":str(csv_path),"json":str(json_path),"training":training_ms}
+        st.session_state["meta"] = {"label":label,"csv":str(csv_path),"json":str(json_path),"training":training_ms,"db_experiment_id":db_experiment_id}
         st.success(f"Completed. Saved CSV and JSON in {RESULTS}")
+        if db_experiment_id is not None:
+            st.success(f"Saved experiment #{db_experiment_id} and all four policy results to PostgreSQL.")
+        else:
+            st.warning(f"PostgreSQL save failed (local CSV/JSON are safe): {db_error}")
     if "result" in st.session_state:
         result, meta = st.session_state["result"], st.session_state["meta"]
         st.subheader("Latest benchmark")

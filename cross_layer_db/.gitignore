@@ -1,32 +1,22 @@
-
-
-# Generated datasets and model artifacts
-data/processed/*.csv
-ml/*.joblib
-
-# Python environments
+# Python environments and bytecode
 venv/
 .venv/
 __pycache__/
+**/__pycache__/
 *.py[cod]
-
-# Experiment outputs
-results/
 *.log
 
-# Track page replacement benchmark results
-!page_replacement_benchmark/results/
-!page_replacement_benchmark/results/**
+# Local credentials and Streamlit secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
 
-
-# Large generated page-snapshot datasets
+# Local generated datasets and monitoring captures
+data/processed/
+data/OS_result/
+data/combined_monitoring/
 ml_cache_policy/data/olist_page_snapshots*.csv
 ml_cache_policy/data/cache_policy_training_data.csv
 
-# Raw monitoring and experiment collections
-data/OS_result/
-data/combined_monitoring/
-
-# Python-generated files
-**/__pycache__/
-*.pyc
+# Keep curated benchmark reports and model artifacts tracked

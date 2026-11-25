@@ -4,7 +4,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ml_cache_policy.ml_policy import MLCachePolicy
+from ml_model.cache_policy.ml_policy import MLCachePolicy
 
 
 class MLPolicySimulator:

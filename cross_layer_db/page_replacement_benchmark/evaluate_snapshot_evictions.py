@@ -1,21 +1,19 @@
 import csv
 import json
 import statistics
-from collections import defaultdict
 from itertools import groupby
 from pathlib import Path
 from time import perf_counter_ns
+import sys
 
 import pandas as pd
-import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from ml_cache_policy.ml_policy import MLCachePolicy
+from ml_model.cache_policy.ml_policy import MLCachePolicy
 
-ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "ml_cache_policy" / "data"
+DATA = ROOT / "ml_model" / "cache_policy" / "data"
 OUTPUT = ROOT / "page_replacement_benchmark" / "results"
 
 SNAPSHOT_FILE = DATA / "olist_page_snapshots_pressure.csv"
@@ -156,7 +154,6 @@ def evaluate():
         if k == 0:
             continue
 
-        # Each policy ranks the same eligible candidate set.
         rankings = {}
 
         start = perf_counter_ns()
@@ -188,8 +185,6 @@ def evaluate():
         )
         lfu_latency = (perf_counter_ns() - start) / 1000
 
-        # ML predicts probability of remaining resident.
-        # Lowest probability is ranked as the first victim.
         X = pd.DataFrame(eligible)[FEATURES]
 
         start = perf_counter_ns()
@@ -199,10 +194,7 @@ def evaluate():
         rankings["ML"] = [
             candidate
             for _, candidate in sorted(
-                zip(
-                    probabilities,
-                    eligible,
-                ),
+                zip(probabilities, eligible),
                 key=lambda item: (
                     item[0],
                     item[1]["page_id"],

@@ -1,6 +1,6 @@
 # ML-Based Cross-Layer Database Buffer & Memory Management
 
-An experimental project exploring database workload analysis, operating-system monitoring, page-replacement policies, and machine-learning-assisted cache decisions. It includes a Streamlit dashboard connected to PostgreSQL, a four-policy cache simulator, and supporting data-collection and model-evaluation scripts.
+An experimental project exploring operating-system monitoring, database workload measurements, page-replacement policies, and machine-learning-assisted cache decisions. It includes a Streamlit dashboard connected to PostgreSQL, a four-policy cache simulator, and supporting data-collection and model-evaluation scripts.
 
 > **Measurement note:** Dashboard cache hit ratios and page faults are simulator results for the generated workload or an uploaded ordered page-reference trace. They are not PostgreSQL's own shared-buffer hit ratios. PostgreSQL query measurements and buffer counters are collected separately.
 
@@ -30,13 +30,9 @@ The project database also includes workload catalog and audit objects, including
 
 New dashboard runs use the workload name **Workload**. Existing database rows are not renamed automatically.
 
-### Supporting experiments
+### ML cache-policy component
 
-- OS monitoring with `psutil`
-- Olist SQL workload and PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` measurements
-- Cross-layer feature preparation and Random Forest workload-state models
-- ML cache-policy training/evaluation scripts
-- FIFO, LRU, LFU, and ML policy comparison and report scripts
+The active ML model is in `cross_layer_db/ml_model/cache_policy/`. It predicts page-residency probability from snapshot-derived page features and ranks eviction candidates. The same component is used by the four-policy snapshot evaluation.
 
 ## Technology stack
 
@@ -181,17 +177,13 @@ cross_layer_db/
 │   └── compare_os_data.py
 ├── os_monitor/
 │   └── monitor.py
-├── ml/
-│   ├── data/
-│   ├── features/
-│   ├── models/
-│   ├── evaluation/
-│   ├── decision_support/
-│   └── train_workload_model.py
-├── ml_cache_policy/
-│   ├── ml_policy.py
-│   ├── train_cache_policy.py
-│   └── ...
+├── ml_model/
+│   └── cache_policy/
+│       ├── data/
+│       ├── models/
+│       ├── ml_policy.py
+│       ├── train_cache_policy.py
+│       └── supporting scripts
 ├── page_replacement_benchmark/
 │   ├── algorithms.py
 │   ├── evaluate_snapshot_evictions.py
@@ -215,6 +207,7 @@ cross_layer_db/
 - The dashboard's generated trace is synthetic. Uploaded traces are only as representative as the data supplied.
 - PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` gives query-level timing and buffer counters; it does not provide the complete chronological logical page-reference stream needed to reproduce the database buffer cache exactly.
 - `pg_buffercache` snapshots show resident buffers at sampling time, not the full sequence of page accesses.
+- The ML cache-policy model uses snapshot-derived features to rank eviction candidates; its evaluation is not a logical page-reference trace or a cache hit-rate simulation.
 - ML training and inference overhead should be considered separately from cache hit ratio.
 - Python memory measurements are not PostgreSQL server memory measurements.
 - Results depend on workload, cache capacity, implementation, and machine. Do not present simulator results as production PostgreSQL performance.

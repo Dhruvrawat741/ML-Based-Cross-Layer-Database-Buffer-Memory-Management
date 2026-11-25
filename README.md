@@ -84,7 +84,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install -r dashboard/requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ### 4. Configure PostgreSQL
@@ -174,8 +174,7 @@ The SQL Query Lab intentionally does not allow schema-changing commands such as 
 ```text
 cross_layer_db/
 ├── dashboard/
-│   ├── app.py
-│   └── requirements.txt
+│   └── app.py
 ├── experiments/
 │   ├── olist_workload.sql
 │   ├── measure_query_metrics.py

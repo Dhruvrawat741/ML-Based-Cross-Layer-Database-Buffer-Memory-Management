@@ -355,20 +355,25 @@ def experiment_history_page():
 
 def main():
     st.set_page_config(page_title="Cross-Layer DB Lab", page_icon="🧠", layout="wide")
+    px.defaults.template = "plotly_dark"
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
     html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-    .stApp { background: #f2f7f7; }
-    [data-testid="stSidebar"] { background: #102a2e; }
-    [data-testid="stSidebar"] * { color: #effafa !important; }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: #a9c9c9 !important; }
-    h1, h2, h3 { color: #17383b; letter-spacing: -0.035em; }
-    [data-testid="stMetric"] { background: #ffffff; border: 1px solid #dce9e8; padding: 16px; border-radius: 14px; }
-    .stButton > button[kind="primary"] { background: #0f8b8d; color: white; border: 0; border-radius: 10px; }
-    .stButton > button { border-radius: 10px; border-color: #c8ddda; }
-    [data-testid="stDataFrame"], [data-testid="stPlotlyChart"] { background: white; border-radius: 14px; }
+    .stApp { background: #10191c; color: #e4eeee; }
+    [data-testid="stHeader"] { background: #10191c; }
+    [data-testid="stSidebar"] { background: #0b2225; border-right: 1px solid #254044; }
+    [data-testid="stSidebar"] * { color: #e4eeee !important; }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: #9db8b8 !important; }
+    h1, h2, h3, p, label, [data-testid="stCaptionContainer"] { color: #e4eeee; }
+    [data-testid="stMetric"] { background: #1a2a2e; border: 1px solid #2a4549; padding: 16px; border-radius: 14px; }
+    [data-testid="stMetricLabel"] { color: #a9c3c3; }
+    [data-testid="stMetricValue"] { color: #f0f7f7; }
+    .stButton > button[kind="primary"] { background: #0f9d91; color: #071b1c; border: 0; border-radius: 10px; font-weight: 700; }
+    .stButton > button { background: #20383c; color: #e4eeee; border-radius: 10px; border: 1px solid #36565a; }
+    [data-testid="stDataFrame"], [data-testid="stPlotlyChart"] { background: #172629; border-radius: 14px; }
     [data-testid="stAlert"] { border-radius: 12px; }
+    textarea, input, [data-baseweb="select"] > div { background-color: #1a2a2e !important; color: #e4eeee !important; }
     </style>
     """, unsafe_allow_html=True)
     with st.sidebar:
